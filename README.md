@@ -2,6 +2,8 @@
 
 A robust, console-based CRUD (Create, Read, Update, Delete) application developed in standard Java. The system allows educational institutions or administrators to manage student records through an interactive command-line interface with full input validation and error prevention.
 
+> 📄 **Academic Project Report**: For the formal project documentation, SRS requirements, Mermaid class diagrams, complexity analysis, and verification matrix, see [PROJECT_REPORT.md](PROJECT_REPORT.md).
+
 ---
 
 ## Features
@@ -39,6 +41,7 @@ student-management-system/
 │           ├── Main.java           # Terminal UI menu loop & input validation
 │           ├── Student.java        # Student entity model
 │           └── StudentService.java # In-memory business logic layer
+├── PROJECT_REPORT.md               # Formal academic & technical project report
 ├── README.md                       # Documentation & instructions
 └── .gitignore                      # Standard Java ignore rules
 ```
