@@ -4,7 +4,7 @@ A robust, console-based CRUD (Create, Read, Update, Delete) application develope
 
 ---
 
-## 📋 Features
+## Features
 
 - **Add Student**: Register a new student with unique ID, name, course, and marks. Includes automated grade calculation.
 - **View All Students**: Display all registered students in a formatted tabular layout.
@@ -16,7 +16,7 @@ A robust, console-based CRUD (Create, Read, Update, Delete) application develope
 
 ---
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 - **Java Development Kit (JDK)**: JDK 11, JDK 17, or newer (tested with JDK 21).
 - **Terminal / Command Prompt**: Any standard terminal emulator (macOS Terminal, Linux Bash/Zsh, Windows Command Prompt/PowerShell).
@@ -29,7 +29,7 @@ javac -version
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 student-management-system/
@@ -45,7 +45,7 @@ student-management-system/
 
 ---
 
-## 🚀 Setup and Execution
+## Setup and Execution
 
 Navigate to the project directory:
 ```bash
@@ -149,7 +149,7 @@ Thank you for using Student Management System. Goodbye!
 
 ---
 
-## 🤖 Automated Evaluation Compatibility
+## Automated Evaluation Compatibility
 
 This project is tailored to work seamlessly with automated evaluation pipelines and test harnesses:
 - Handles standard input redirection and pipes (e.g., `java -cp bin com.example.Main < test_input.txt`).
