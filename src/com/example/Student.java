@@ -1,106 +1,74 @@
 package com.example;
 
-import java.util.Objects;
-
 /**
- * Model class representing a Student in the Student Management System.
+ * Core entity model representing a Student enrolled in the institution.
+ * Inherits fundamental identity fields from Person and encapsulates academic metrics.
  */
-public class Student {
-    private int id;
-    private String name;
-    private String course;
-    private double marks;
+public abstract class Student extends Person {
+    private String department;
+    private double gpa; // 0.00 to 4.00
+    private AcademicStanding academicStanding;
 
-    /**
-     * Default constructor.
-     */
     public Student() {
+        super();
+        this.academicStanding = AcademicStanding.GOOD_STANDING;
+    }
+
+    public Student(int id, String name, String email, String phone, String department, double gpa) {
+        super(id, name, email, phone);
+        this.department = department;
+        setGpa(gpa);
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public double getGpa() {
+        return gpa;
+    }
+
+    public void setGpa(double gpa) {
+        this.gpa = Math.max(0.0, Math.min(4.0, gpa));
+        this.academicStanding = AcademicStanding.evaluate(this.gpa);
+    }
+
+    public AcademicStanding getAcademicStanding() {
+        return academicStanding;
+    }
+
+    public void setAcademicStanding(AcademicStanding academicStanding) {
+        this.academicStanding = academicStanding != null ? academicStanding : AcademicStanding.evaluate(this.gpa);
     }
 
     /**
-     * Parameterized constructor.
-     *
-     * @param id     unique student identifier
-     * @param name   student's full name
-     * @param course enrolled course name
-     * @param marks  marks scored (0.0 to 100.0)
+     * Calculates letter grade based on standard 4.0 GPA conversion.
      */
-    public Student(int id, String name, String course, double marks) {
-        this.id = id;
-        this.name = name;
-        this.course = course;
-        this.marks = marks;
-    }
-
-    // Getters and Setters
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCourse() {
-        return course;
-    }
-
-    public void setCourse(String course) {
-        this.course = course;
-    }
-
-    public double getMarks() {
-        return marks;
-    }
-
-    public void setMarks(double marks) {
-        this.marks = marks;
+    public String getEquivalentGrade() {
+        if (gpa >= 3.70) return "A";
+        if (gpa >= 3.30) return "A-";
+        if (gpa >= 3.00) return "B+";
+        if (gpa >= 2.70) return "B";
+        if (gpa >= 2.30) return "B-";
+        if (gpa >= 2.00) return "C+";
+        if (gpa >= 1.70) return "C";
+        if (gpa >= 1.00) return "D";
+        return "F";
     }
 
     /**
-     * Calculates letter grade based on marks.
-     *
-     * @return letter grade (A, B, C, D, or F)
+     * Polymorphic method implemented by Undergraduate and Graduate student models
+     * to describe specific graduation milestone requirements.
      */
-    public String getGrade() {
-        if (marks >= 90.0) {
-            return "A";
-        } else if (marks >= 80.0) {
-            return "B";
-        } else if (marks >= 70.0) {
-            return "C";
-        } else if (marks >= 60.0) {
-            return "D";
-        } else {
-            return "F";
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Student student = (Student) o;
-        return id == student.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    public abstract String getGraduationMilestone();
 
     @Override
     public String toString() {
-        return String.format("Student [ID=%d, Name='%s', Course='%s', Marks=%.2f, Grade='%s']",
-                id, name, course, marks, getGrade());
+        return String.format("Student [ID=%d, Name='%s', Dept='%s', GPA=%.2f (%s), Standing=%s]",
+                getId(), getName(), department, gpa, getEquivalentGrade(), academicStanding.name());
     }
 }

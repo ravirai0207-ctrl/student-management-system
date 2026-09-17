@@ -1,3 +1,5 @@
-ID,Name,Course,Marks
-101,Alice Smith,Computer Science,94.50
-102,Bob Jones,Data Science,86.00
+Type,ID,Name,Email,Phone,Department,GPA,Field1,Field2,Field3
+UG,101,Alice Smith,alice.smith@university.edu,+15551234567,Computer Science,3.92,6,Mathematics,Autonomous Drone Navigation
+UG,102,Bob Jones,bob.jones@university.edu,+15559876543,Data Science,3.45,4,None,Smart Energy Grid Analytics
+GRAD,201,Dr. Clara Oswald,clara.o@university.edu,+15554567890,Computer Science,3.88,Dr. Anita Sharma,Quantum Cryptographic Protocols,Research Assistant
+UG,103,David Miller,david.m@university.edu,+15553210987,Mechanical Eng.,1.85,2,None,Pending Proposal

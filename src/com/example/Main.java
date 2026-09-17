@@ -1,39 +1,39 @@
 package com.example;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
 
 /**
- * Main application class providing an interactive terminal UI menu loop
- * for the Student Management System.
+ * Main application driver providing an interactive CLI menu loop
+ * for the Comprehensive Academic Student Management & Analytics System.
  */
 public class Main {
-    private static final StudentService studentService = new StudentService();
+
+    private static final String DATA_DIR = ".";
+    private static final StudentService studentService = new StudentService(DATA_DIR);
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
 
-        System.out.println("==========================================");
-        System.out.println("  Welcome to Student Management System   ");
-        System.out.println("==========================================");
+        System.out.println("===============================================================");
+        System.out.println("       STUDENT MANAGEMENT & ACADEMIC ANALYTICS SYSTEM (CLI)    ");
+        System.out.println("===============================================================");
 
-        int loadedCount = studentService.getStudentCount();
-        if (loadedCount > 0) {
-            System.out.printf("Persistent Storage: Loaded %d student record(s) from students.csv\n", loadedCount);
-        }
+        int sCount = studentService.getStudentCount();
+        int cCount = studentService.getCourseCount();
+        int eCount = studentService.getEnrollmentCount();
+        System.out.printf("Persistent Storage: Loaded %d student(s), %d course(s), %d enrollment(s).\n", sCount, cCount, eCount);
 
         while (running) {
-            printMenu();
-            System.out.print("Enter your choice: ");
+            printMainMenu();
+            System.out.print("Enter your choice (1-11): ");
 
-            String choiceInput = readLineOrNull(scanner);
+            String choiceInput = ValidationUtils.readLineOrNull(scanner);
             if (choiceInput == null) {
-                // End of Input (EOF) reached
-                studentService.saveToStorage();
-                System.out.println("\nEnd of input detected. Exiting system. Goodbye!");
+                studentService.syncAllData();
+                System.out.println("\nEnd of input detected. Academic data synced. Goodbye!");
                 break;
             }
 
@@ -41,27 +41,42 @@ public class Main {
 
             switch (choice) {
                 case "1":
-                    handleAddStudent(scanner);
+                    handleRegisterUndergraduate(scanner);
                     break;
                 case "2":
-                    handleViewAllStudents();
+                    handleRegisterGraduate(scanner);
                     break;
                 case "3":
-                    handleSearchStudent(scanner);
+                    handleViewAllStudents();
                     break;
                 case "4":
-                    handleDeleteStudent(scanner);
+                    handleViewDeansList();
                     break;
                 case "5":
-                    handleUpdateStudent(scanner);
+                    handleViewProbationList();
                     break;
                 case "6":
-                    studentService.saveToStorage();
-                    System.out.println("\nThank you for using Student Management System. Goodbye!");
+                    handleAddCourse(scanner);
+                    break;
+                case "7":
+                    handleViewCourseCatalog();
+                    break;
+                case "8":
+                    handleEnrollStudent(scanner);
+                    break;
+                case "9":
+                    handleGenerateTranscript(scanner);
+                    break;
+                case "10":
+                    handleDeleteStudent(scanner);
+                    break;
+                case "11":
+                    studentService.syncAllData();
+                    System.out.println("\nAll academic records safely saved to storage. Thank you for using the system!");
                     running = false;
                     break;
                 default:
-                    System.out.println("Invalid choice. Please select an option from the menu (1-6).\n");
+                    System.out.println("Invalid selection. Please choose an option from 1 to 11.\n");
                     break;
             }
         }
@@ -69,244 +84,317 @@ public class Main {
         scanner.close();
     }
 
-    /**
-     * Displays the interactive main menu.
-     */
-    private static void printMenu() {
-        System.out.println("\n==========================================");
-        System.out.println("                MAIN MENU                 ");
-        System.out.println("==========================================");
-        System.out.println("1. Add Student");
-        System.out.println("2. View All");
-        System.out.println("3. Search by ID");
-        System.out.println("4. Delete Student");
-        System.out.println("5. Update Student");
-        System.out.println("6. Exit");
-        System.out.println("==========================================");
+    private static void printMainMenu() {
+        System.out.println("\n===============================================================");
+        System.out.println("                          MAIN MENU                            ");
+        System.out.println("===============================================================");
+        System.out.println("  1. Register Undergraduate Student (B.Tech / B.S.)");
+        System.out.println("  2. Register Graduate Student (M.Tech / M.S. / Ph.D.)");
+        System.out.println("  3. View All Registered Students");
+        System.out.println("  4. View Dean's Honor List (Merit Ranking: GPA >= 3.70)");
+        System.out.println("  5. View Academic Probation List (GPA < 2.00)");
+        System.out.println("  6. Add New Course Offering");
+        System.out.println("  7. View Course Catalog");
+        System.out.println("  8. Enroll Student in Course & Record Grade");
+        System.out.println("  9. Generate Official Academic Transcript");
+        System.out.println(" 10. Delete Student Record");
+        System.out.println(" 11. Exit System");
+        System.out.println("===============================================================");
     }
 
-    /**
-     * Handles adding a new student with validation.
-     */
-    private static void handleAddStudent(Scanner scanner) {
-        System.out.println("\n--- Add New Student ---");
-
-        Integer id = readPositiveInteger(scanner, "Enter Student ID: ");
+    // ==================== 1. Register Undergraduate ====================
+    private static void handleRegisterUndergraduate(Scanner scanner) {
+        System.out.println("\n--- [1] Register Undergraduate Student ---");
+        Integer id = ValidationUtils.readPositiveInt(scanner, "Enter Student ID: ");
         if (id == null) return;
 
-        if (studentService.existsById(id)) {
+        if (studentService.findStudentById(id).isPresent()) {
             System.out.printf("Error: Student with ID %d already exists.\n", id);
             return;
         }
 
-        String name = readNonEmptyString(scanner, "Enter Student Name: ");
+        String name = ValidationUtils.readNonEmptyString(scanner, "Enter Student Full Name: ");
         if (name == null) return;
 
-        String course = readNonEmptyString(scanner, "Enter Course Name: ");
-        if (course == null) return;
+        String email = ValidationUtils.readEmail(scanner, "Enter Email Address: ");
+        if (email == null) return;
 
-        Double marks = readDoubleInRange(scanner, "Enter Marks (0.0 - 100.0): ", 0.0, 100.0);
-        if (marks == null) return;
+        String phone = ValidationUtils.readPhone(scanner, "Enter Phone Number: ");
+        if (phone == null) return;
 
-        Student student = new Student(id, name, course, marks);
-        boolean added = studentService.addStudent(student);
+        String dept = ValidationUtils.readNonEmptyString(scanner, "Enter Department (e.g. CSE, ECE, Mechanical): ");
+        if (dept == null) return;
+
+        Double gpa = ValidationUtils.readDoubleInRange(scanner, "Enter Cumulative GPA (0.00 - 4.00): ", 0.0, 4.0);
+        if (gpa == null) return;
+
+        Integer sem = ValidationUtils.readPositiveInt(scanner, "Enter Current Semester (1 - 8): ");
+        if (sem == null) return;
+
+        String minor = ValidationUtils.readNonEmptyString(scanner, "Enter Minor Subject (or 'None'): ");
+        if (minor == null) return;
+
+        String capstone = ValidationUtils.readNonEmptyString(scanner, "Enter Capstone Project Title (or 'Pending'): ");
+        if (capstone == null) return;
+
+        UndergraduateStudent ug = new UndergraduateStudent(id, name, email, phone, dept, gpa, sem, minor, capstone);
+        boolean added = studentService.registerStudent(ug);
 
         if (added) {
-            System.out.println("Student added successfully!");
-            System.out.println(student);
+            System.out.println("Undergraduate student successfully registered and persisted!");
+            System.out.println(ug);
         } else {
-            System.out.println("Failed to add student. Please try again.");
+            System.out.println("Failed to register student.");
         }
     }
 
-    /**
-     * Handles viewing all student records in a formatted table.
-     */
+    // ==================== 2. Register Graduate ====================
+    private static void handleRegisterGraduate(Scanner scanner) {
+        System.out.println("\n--- [2] Register Graduate Research Student ---");
+        Integer id = ValidationUtils.readPositiveInt(scanner, "Enter Student ID: ");
+        if (id == null) return;
+
+        if (studentService.findStudentById(id).isPresent()) {
+            System.out.printf("Error: Student with ID %d already exists.\n", id);
+            return;
+        }
+
+        String name = ValidationUtils.readNonEmptyString(scanner, "Enter Student Full Name: ");
+        if (name == null) return;
+
+        String email = ValidationUtils.readEmail(scanner, "Enter Email Address: ");
+        if (email == null) return;
+
+        String phone = ValidationUtils.readPhone(scanner, "Enter Phone Number: ");
+        if (phone == null) return;
+
+        String dept = ValidationUtils.readNonEmptyString(scanner, "Enter Department: ");
+        if (dept == null) return;
+
+        Double gpa = ValidationUtils.readDoubleInRange(scanner, "Enter Cumulative GPA (0.00 - 4.00): ", 0.0, 4.0);
+        if (gpa == null) return;
+
+        String advisor = ValidationUtils.readNonEmptyString(scanner, "Enter Thesis Advisor Name: ");
+        if (advisor == null) return;
+
+        String thesis = ValidationUtils.readNonEmptyString(scanner, "Enter Research / Thesis Title: ");
+        if (thesis == null) return;
+
+        String assistantship = ValidationUtils.readNonEmptyString(scanner, "Enter Assistantship (Research Assistant/Teaching Assistant/None): ");
+        if (assistantship == null) return;
+
+        GraduateStudent grad = new GraduateStudent(id, name, email, phone, dept, gpa, advisor, thesis, assistantship);
+        boolean added = studentService.registerStudent(grad);
+
+        if (added) {
+            System.out.println("Graduate student successfully registered and persisted!");
+            System.out.println(grad);
+        } else {
+            System.out.println("Failed to register student.");
+        }
+    }
+
+    // ==================== 3. View All Students ====================
     private static void handleViewAllStudents() {
-        System.out.println("\n--- View All Students ---");
+        System.out.println("\n--- [3] View All Registered Students ---");
         List<Student> students = studentService.getAllStudents();
-
         if (students.isEmpty()) {
-            System.out.println("No students found.");
+            System.out.println("No student records found.");
             return;
         }
 
-        System.out.println("+--------+----------------------+----------------------+-------+-------+");
-        System.out.printf("| %-6s | %-20s | %-20s | %-5s | %-5s |\n", "ID", "Name", "Course", "Marks", "Grade");
-        System.out.println("+--------+----------------------+----------------------+-------+-------+");
+        System.out.println("+------+----------------------+----------------------+-------+-------+-------------------------+----------------------+");
+        System.out.printf("| %-4s | %-20s | %-20s | %-5s | %-5s | %-23s | %-20s |\n",
+                "ID", "Name", "Department", "GPA", "Grade", "Program Level", "Academic Standing");
+        System.out.println("+------+----------------------+----------------------+-------+-------+-------------------------+----------------------+");
         for (Student s : students) {
-            System.out.printf("| %-6d | %-20s | %-20s | %5.2f | %-5s |\n",
+            System.out.printf("| %-4d | %-20s | %-20s | %5.2f | %-5s | %-23s | %-20s |\n",
                     s.getId(),
-                    truncate(s.getName(), 20),
-                    truncate(s.getCourse(), 20),
-                    s.getMarks(),
-                    s.getGrade());
+                    ValidationUtils.truncate(s.getName(), 20),
+                    ValidationUtils.truncate(s.getDepartment(), 20),
+                    s.getGpa(),
+                    s.getEquivalentGrade(),
+                    ValidationUtils.truncate(s.getRoleDescription(), 23),
+                    ValidationUtils.truncate(s.getAcademicStanding().name(), 20));
         }
-        System.out.println("+--------+----------------------+----------------------+-------+-------+");
-        System.out.printf("Total Students: %d\n", students.size());
+        System.out.println("+------+----------------------+----------------------+-------+-------+-------------------------+----------------------+");
+        System.out.printf("Total Enrolled Students: %d\n", students.size());
     }
 
-    /**
-     * Handles searching for a student by their ID.
-     */
-    private static void handleSearchStudent(Scanner scanner) {
-        System.out.println("\n--- Search Student by ID ---");
-        Integer id = readPositiveInteger(scanner, "Enter Student ID to search: ");
-        if (id == null) return;
-
-        Optional<Student> studentOpt = studentService.findStudentById(id);
-        if (studentOpt.isPresent()) {
-            Student student = studentOpt.get();
-            System.out.println("Student found:");
-            System.out.println("------------------------------------------");
-            System.out.printf("ID     : %d\n", student.getId());
-            System.out.printf("Name   : %s\n", student.getName());
-            System.out.printf("Course : %s\n", student.getCourse());
-            System.out.printf("Marks  : %.2f\n", student.getMarks());
-            System.out.printf("Grade  : %s\n", student.getGrade());
-            System.out.println("------------------------------------------");
-        } else {
-            System.out.printf("Student with ID %d not found.\n", id);
-        }
-    }
-
-    /**
-     * Handles deleting a student by their ID.
-     */
-    private static void handleDeleteStudent(Scanner scanner) {
-        System.out.println("\n--- Delete Student ---");
-        Integer id = readPositiveInteger(scanner, "Enter Student ID to delete: ");
-        if (id == null) return;
-
-        boolean deleted = studentService.deleteStudent(id);
-        if (deleted) {
-            System.out.printf("Student with ID %d deleted successfully.\n", id);
-        } else {
-            System.out.printf("Student with ID %d not found.\n", id);
-        }
-    }
-
-    /**
-     * Handles updating an existing student record (full CRUD capability).
-     */
-    private static void handleUpdateStudent(Scanner scanner) {
-        System.out.println("\n--- Update Student ---");
-        Integer id = readPositiveInteger(scanner, "Enter Student ID to update: ");
-        if (id == null) return;
-
-        Optional<Student> studentOpt = studentService.findStudentById(id);
-        if (!studentOpt.isPresent()) {
-            System.out.printf("Student with ID %d not found.\n", id);
+    // ==================== 4. View Dean's Honor List ====================
+    private static void handleViewDeansList() {
+        System.out.println("\n--- [4] Dean's Honor List (Merit Ranking: GPA >= 3.70) ---");
+        System.out.println("Top academic performers sorted dynamically by GPA in descending order:");
+        List<Student> list = studentService.getDeansHonorList();
+        if (list.isEmpty()) {
+            System.out.println("No students currently qualify for Dean's List (Minimum GPA required: 3.70).");
             return;
         }
 
-        Student existing = studentOpt.get();
-        System.out.printf("Current details: %s\n", existing);
+        System.out.println("+------+----------------------+----------------------+-------+-------+---------------------------------------+");
+        System.out.printf("| %-4s | %-20s | %-20s | %-5s | %-5s | %-37s |\n",
+                "ID", "Honors Scholar Name", "Department", "GPA", "Grade", "Milestone / Academic Achievement");
+        System.out.println("+------+----------------------+----------------------+-------+-------+---------------------------------------+");
+        for (Student s : list) {
+            System.out.printf("| %-4d | %-20s | %-20s | %5.2f | %-5s | %-37s |\n",
+                    s.getId(),
+                    ValidationUtils.truncate(s.getName(), 20),
+                    ValidationUtils.truncate(s.getDepartment(), 20),
+                    s.getGpa(),
+                    s.getEquivalentGrade(),
+                    ValidationUtils.truncate(s.getGraduationMilestone(), 37));
+        }
+        System.out.println("+------+----------------------+----------------------+-------+-------+---------------------------------------+");
+        System.out.printf("Total Dean's Honor Scholars: %d\n", list.size());
+    }
 
-        String newName = readNonEmptyString(scanner, "Enter New Name: ");
-        if (newName == null) return;
+    // ==================== 5. View Probation List ====================
+    private static void handleViewProbationList() {
+        System.out.println("\n--- [5] Academic Probation & Intervention List ---");
+        List<Student> list = studentService.getProbationList();
+        if (list.isEmpty()) {
+            System.out.println("Excellent news! Zero students currently on academic probation.");
+            return;
+        }
 
-        String newCourse = readNonEmptyString(scanner, "Enter New Course: ");
-        if (newCourse == null) return;
+        System.out.println("+------+----------------------+----------------------+-------+---------------------------------------+");
+        System.out.printf("| %-4s | %-20s | %-20s | %-5s | %-37s |\n",
+                "ID", "Student Name", "Department", "GPA", "Intervention Status");
+        System.out.println("+------+----------------------+----------------------+-------+---------------------------------------+");
+        for (Student s : list) {
+            System.out.printf("| %-4d | %-20s | %-20s | %5.2f | %-37s |\n",
+                    s.getId(),
+                    ValidationUtils.truncate(s.getName(), 20),
+                    ValidationUtils.truncate(s.getDepartment(), 20),
+                    s.getGpa(),
+                    ValidationUtils.truncate(s.getAcademicStanding().getDescription(), 37));
+        }
+        System.out.println("+------+----------------------+----------------------+-------+---------------------------------------+");
+        System.out.printf("Students Requiring Academic Advising: %d\n", list.size());
+    }
 
-        Double newMarks = readDoubleInRange(scanner, "Enter New Marks (0.0 - 100.0): ", 0.0, 100.0);
-        if (newMarks == null) return;
+    // ==================== 6. Add Course ====================
+    private static void handleAddCourse(Scanner scanner) {
+        System.out.println("\n--- [6] Add New Course Offering ---");
+        String code = ValidationUtils.readNonEmptyString(scanner, "Enter Course Code (e.g. CSE2005): ");
+        if (code == null) return;
+        code = code.trim().toUpperCase();
 
-        boolean updated = studentService.updateStudent(id, newName, newCourse, newMarks);
-        if (updated) {
-            System.out.printf("Student with ID %d updated successfully.\n", id);
-            System.out.println(studentService.getStudentById(id));
+        if (studentService.findCourseByCode(code).isPresent()) {
+            System.out.printf("Error: Course code %s already exists in catalog.\n", code);
+            return;
+        }
+
+        String title = ValidationUtils.readNonEmptyString(scanner, "Enter Course Title: ");
+        if (title == null) return;
+
+        Integer credits = ValidationUtils.readPositiveInt(scanner, "Enter Credit Units (1 - 5): ");
+        if (credits == null) return;
+
+        String dept = ValidationUtils.readNonEmptyString(scanner, "Enter Department: ");
+        if (dept == null) return;
+
+        String instructor = ValidationUtils.readNonEmptyString(scanner, "Enter Lead Instructor Name: ");
+        if (instructor == null) return;
+
+        Course course = new Course(code, title, credits, dept, instructor);
+        boolean added = studentService.addCourse(course);
+
+        if (added) {
+            System.out.println("Course added successfully to institutional catalog!");
+            System.out.println(course);
         } else {
-            System.out.printf("Failed to update student with ID %d.\n", id);
+            System.out.println("Failed to add course.");
         }
     }
 
-    // ==================== Robust Input Helpers ====================
-
-    /**
-     * Safely reads a line from scanner, returning null if EOF is encountered.
-     */
-    private static String readLineOrNull(Scanner scanner) {
-        try {
-            if (scanner.hasNextLine()) {
-                return scanner.nextLine();
-            }
-        } catch (NoSuchElementException | IllegalStateException e) {
-            return null;
+    // ==================== 7. View Course Catalog ====================
+    private static void handleViewCourseCatalog() {
+        System.out.println("\n--- [7] Institutional Course Catalog ---");
+        List<Course> courses = studentService.getAllCourses();
+        if (courses.isEmpty()) {
+            System.out.println("No course offerings registered in catalog.");
+            return;
         }
-        return null;
+
+        System.out.println("+------------+--------------------------------+---------+----------------------+----------------------+");
+        System.out.printf("| %-10s | %-30s | %-7s | %-20s | %-20s |\n",
+                "CourseCode", "Course Title", "Credits", "Department", "Lead Instructor");
+        System.out.println("+------------+--------------------------------+---------+----------------------+----------------------+");
+        for (Course c : courses) {
+            System.out.printf("| %-10s | %-30s | %-7d | %-20s | %-20s |\n",
+                    c.getCourseCode(),
+                    ValidationUtils.truncate(c.getCourseTitle(), 30),
+                    c.getCredits(),
+                    ValidationUtils.truncate(c.getDepartment(), 20),
+                    ValidationUtils.truncate(c.getInstructorName(), 20));
+        }
+        System.out.println("+------------+--------------------------------+---------+----------------------+----------------------+");
+        System.out.printf("Total Courses Available: %d\n", courses.size());
     }
 
-    /**
-     * Reads a non-empty string with prompt, robust against empty lines.
-     */
-    private static String readNonEmptyString(Scanner scanner, String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String line = readLineOrNull(scanner);
-            if (line == null) {
-                return null;
-            }
-            line = line.trim();
-            if (!line.isEmpty()) {
-                return line;
-            }
-            System.out.println("Input cannot be empty. Please try again.");
-        }
-    }
+    // ==================== 8. Enroll Student ====================
+    private static void handleEnrollStudent(Scanner scanner) {
+        System.out.println("\n--- [8] Enroll Student in Course & Record Grade ---");
+        Integer enrollId = ValidationUtils.readPositiveInt(scanner, "Enter New Enrollment ID: ");
+        if (enrollId == null) return;
 
-    /**
-     * Reads a positive integer with prompt, robust against non-numeric and non-positive input.
-     */
-    private static Integer readPositiveInteger(Scanner scanner, String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String line = readLineOrNull(scanner);
-            if (line == null) {
-                return null;
-            }
-            try {
-                int val = Integer.parseInt(line.trim());
-                if (val <= 0) {
-                    System.out.println("Error: Student ID must be a positive integer (> 0). Please try again.");
-                    continue;
-                }
-                return val;
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid integer number.");
-            }
+        Integer studentId = ValidationUtils.readPositiveInt(scanner, "Enter Student ID: ");
+        if (studentId == null) return;
+        Optional<Student> stOpt = studentService.findStudentById(studentId);
+        if (!stOpt.isPresent()) {
+            System.out.printf("Error: Student #%d does not exist. Please register student first.\n", studentId);
+            return;
         }
-    }
 
-    /**
-     * Reads a double value within a specified range, robust against malformed input.
-     */
-    private static Double readDoubleInRange(Scanner scanner, String prompt, double min, double max) {
-        while (true) {
-            System.out.print(prompt);
-            String line = readLineOrNull(scanner);
-            if (line == null) {
-                return null;
-            }
-            try {
-                double value = Double.parseDouble(line.trim());
-                if (value < min || value > max) {
-                    System.out.printf("Value must be between %.1f and %.1f. Please try again.\n", min, max);
-                    continue;
-                }
-                return value;
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid numeric value.");
-            }
+        String courseCode = ValidationUtils.readNonEmptyString(scanner, "Enter Course Code (e.g. CSE2005): ");
+        if (courseCode == null) return;
+        courseCode = courseCode.trim().toUpperCase();
+
+        Optional<Course> crsOpt = studentService.findCourseByCode(courseCode);
+        if (!crsOpt.isPresent()) {
+            System.out.printf("Error: Course code %s not found in catalog.\n", courseCode);
+            return;
+        }
+
+        Double marks = ValidationUtils.readDoubleInRange(scanner, "Enter Final Course Marks (0.0 - 100.0): ", 0.0, 100.0);
+        if (marks == null) return;
+
+        String term = ValidationUtils.readNonEmptyString(scanner, "Enter Academic Term (e.g. Fall 2026): ");
+        if (term == null) return;
+
+        Enrollment enrollment = new Enrollment(enrollId, studentId, courseCode, marks, term);
+        boolean success = studentService.enrollStudent(enrollment);
+
+        if (success) {
+            System.out.println("Student successfully enrolled and grade computed!");
+            System.out.println(enrollment);
+        } else {
+            System.out.println("Failed to enroll: Either enrollment ID already exists or student is already enrolled in this course.");
         }
     }
 
-    /**
-     * Truncates strings exceeding column width for neat display.
-     */
-    private static String truncate(String text, int maxLength) {
-        if (text == null) return "";
-        if (text.length() <= maxLength) return text;
-        return text.substring(0, maxLength - 3) + "...";
+    // ==================== 9. Generate Transcript ====================
+    private static void handleGenerateTranscript(Scanner scanner) {
+        System.out.println("\n--- [9] Generate Official Academic Transcript ---");
+        Integer studentId = ValidationUtils.readPositiveInt(scanner, "Enter Student ID: ");
+        if (studentId == null) return;
+
+        String transcript = studentService.generateAcademicTranscript(studentId);
+        System.out.println(transcript);
+    }
+
+    // ==================== 10. Delete Student ====================
+    private static void handleDeleteStudent(Scanner scanner) {
+        System.out.println("\n--- [10] Delete Student Record ---");
+        Integer studentId = ValidationUtils.readPositiveInt(scanner, "Enter Student ID to delete: ");
+        if (studentId == null) return;
+
+        boolean deleted = studentService.deleteStudent(studentId);
+        if (deleted) {
+            System.out.printf("Student #%d successfully removed from institutional registry.\n", studentId);
+        } else {
+            System.out.printf("Error: Student #%d not found.\n", studentId);
+        }
     }
 }
