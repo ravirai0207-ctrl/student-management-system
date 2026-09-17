@@ -12,7 +12,8 @@ A robust, console-based CRUD (Create, Read, Update, Delete) application develope
 - **View All Students**: Display all registered students in a formatted tabular layout.
 - **Search by ID**: Quickly retrieve student details by ID.
 - **Delete Student**: Safely remove student records by ID.
-- **Update Student**: Modify existing student attributes.
+- **Update Student**: Modify existing student attributes (name, course, marks).
+- **Persistent Storage (CSV)**: Automatically saves records to `students.csv` and loads them upon program startup.
 - **Bulletproof Input Handling**: Validates user inputs (non-empty strings, numeric types, range checks) to prevent runtime crashes or infinite loops during interactive and piped execution.
 - **Zero External Dependencies**: Built strictly with standard Java libraries (`java.util`, `java.io`).
 
@@ -40,7 +41,8 @@ student-management-system/
 │       └── example/
 │           ├── Main.java           # Terminal UI menu loop & input validation
 │           ├── Student.java        # Student entity model
-│           └── StudentService.java # In-memory business logic layer
+│           └── StudentService.java # Business logic & CSV persistence layer
+├── students.csv                    # Persistent data storage (CSV format)
 ├── PROJECT_REPORT.md               # Formal academic & technical project report
 ├── README.md                       # Documentation & instructions
 └── .gitignore                      # Standard Java ignore rules
@@ -69,7 +71,7 @@ java -cp bin com.example.Main
 
 ---
 
-## 💻 Menu Overview & Usage Walkthrough
+## Menu Overview & Usage Walkthrough
 
 Upon launching the application, you are greeted with the interactive menu:
 
@@ -77,6 +79,7 @@ Upon launching the application, you are greeted with the interactive menu:
 ==========================================
   Welcome to Student Management System   
 ==========================================
+Persistent Storage: Loaded 2 student record(s) from students.csv
 
 ==========================================
                 MAIN MENU                 
@@ -85,7 +88,8 @@ Upon launching the application, you are greeted with the interactive menu:
 2. View All
 3. Search by ID
 4. Delete Student
-5. Exit
+5. Update Student
+6. Exit
 ==========================================
 Enter your choice: 
 ```
@@ -143,9 +147,22 @@ Enter Student ID to delete: 101
 Student with ID 101 deleted successfully.
 ```
 
-#### 5. Exiting the System (Option 5)
+#### 5. Updating a Student (Option 5)
 ```
 Enter your choice: 5
+
+--- Update Student ---
+Enter Student ID to update: 101
+Current details: Student [ID=101, Name='Alice Smith', Course='Computer Science', Marks=94.50, Grade='A']
+Enter New Name: Alice Smith
+Enter New Course: AI & Data Science
+Enter New Marks (0.0 - 100.0): 98.0
+Student with ID 101 updated successfully.
+```
+
+#### 6. Exiting the System (Option 6)
+```
+Enter your choice: 6
 
 Thank you for using Student Management System. Goodbye!
 ```

@@ -20,6 +20,11 @@ public class Main {
         System.out.println("  Welcome to Student Management System   ");
         System.out.println("==========================================");
 
+        int loadedCount = studentService.getStudentCount();
+        if (loadedCount > 0) {
+            System.out.printf("Persistent Storage: Loaded %d student record(s) from students.csv\n", loadedCount);
+        }
+
         while (running) {
             printMenu();
             System.out.print("Enter your choice: ");
@@ -27,6 +32,7 @@ public class Main {
             String choiceInput = readLineOrNull(scanner);
             if (choiceInput == null) {
                 // End of Input (EOF) reached
+                studentService.saveToStorage();
                 System.out.println("\nEnd of input detected. Exiting system. Goodbye!");
                 break;
             }
@@ -47,15 +53,15 @@ public class Main {
                     handleDeleteStudent(scanner);
                     break;
                 case "5":
+                    handleUpdateStudent(scanner);
+                    break;
+                case "6":
+                    studentService.saveToStorage();
                     System.out.println("\nThank you for using Student Management System. Goodbye!");
                     running = false;
                     break;
-                case "6":
-                    // Extended option for full CRUD support
-                    handleUpdateStudent(scanner);
-                    break;
                 default:
-                    System.out.println("Invalid choice. Please select an option from the menu (1-5).\n");
+                    System.out.println("Invalid choice. Please select an option from the menu (1-6).\n");
                     break;
             }
         }
@@ -74,7 +80,8 @@ public class Main {
         System.out.println("2. View All");
         System.out.println("3. Search by ID");
         System.out.println("4. Delete Student");
-        System.out.println("5. Exit");
+        System.out.println("5. Update Student");
+        System.out.println("6. Exit");
         System.out.println("==========================================");
     }
 
