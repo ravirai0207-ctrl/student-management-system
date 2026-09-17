@@ -2,14 +2,14 @@
 
 A robust, enterprise-grade console application developed in standard Java for academic institutions. The system manages multi-tiered student populations (Undergraduate and Graduate research scholars), maintains institutional course catalogs, handles student course enrollments, automates Dean's List honors ranking and academic probation monitoring, and produces official transcripts with multi-entity CSV persistence.
 
-> 📄 **Academic Documentation**:
+> **Academic Documentation**:
 > - Formal Statement & Scope: [statement.md](statement.md)
 > - Comprehensive Project Report: [PROJECT_REPORT.md](PROJECT_REPORT.md)
 > - PDF Project Report: [PROJECT_REPORT.pdf](PROJECT_REPORT.pdf)
 
 ---
 
-## 📋 Features
+## Features
 
 1. **Polymorphic Student Administration**:
    - **Undergraduate Students**: Captures semester standing, minor subjects, and senior capstone design project titles.
@@ -32,7 +32,7 @@ A robust, enterprise-grade console application developed in standard Java for ac
 
 ---
 
-## 🛠️ Technologies & Tools Used
+## Technologies & Tools Used
 
 - **Programming Language**: Java Standard Edition 17+ (Tested on OpenJDK 21)
 - **Architecture**: Three-Tier Layered / MVC-Lite Architecture
@@ -43,7 +43,7 @@ A robust, enterprise-grade console application developed in standard Java for ac
 
 ---
 
-## 📂 Project Directory Structure
+## Project Directory Structure
 
 ```
 student-management-system/
@@ -72,7 +72,7 @@ student-management-system/
 
 ---
 
-## 🚀 Setup & Execution Guide
+## Setup & Execution Guide
 
 ### 1. Prerequisites
 Ensure a Java Development Kit (JDK 17 or higher) is installed:
@@ -100,7 +100,7 @@ java -cp bin com.example.Main
 
 ---
 
-## 💻 Menu Overview & Interactive Walkthrough
+## Menu Overview & Interactive Walkthrough
 
 Upon launching the application, you are presented with the main menu:
 
@@ -168,7 +168,7 @@ Milestone     : Capstone: Autonomous Drone Navigation
 
 ---
 
-## 🧪 Automated Testing & Evaluation Compatibility
+## Automated Testing & Evaluation Compatibility
 
 This project is engineered to work reliably with automated evaluation test harnesses and piped standard input:
 ```bash

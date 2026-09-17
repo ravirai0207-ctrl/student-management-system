@@ -409,7 +409,7 @@ erDiagram
 
 ## 8. Design Decisions & Rationale
 
-1. **Two-Tier Inheritance Hierarchy (`Person` ➔ `Student` ➔ `Undergraduate` / `Graduate`)**:
+1. **Two-Tier Inheritance Hierarchy (`Person` -> `Student` -> `Undergraduate` / `Graduate`)**:
    - *Rationale*: Models real-world academia where all students are persons, but undergraduate scholars have semester/capstone milestones while graduate fellows have research advisors, thesis defenses, and assistantship appointments.
 2. **Single-Table Inheritance in CSV Storage**:
    - *Rationale*: Storing both undergraduate and graduate students in `students.csv` with a discriminator column (`UG` vs `GRAD`) simplifies data recovery while preserving full type-specific attributes.
